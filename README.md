@@ -54,3 +54,4 @@ The optimized files will be outputted to the `dist` folder, ready to be deployed
 
 This application is structurally complete and deployed to platforms vercel, you can have a view here - 
 
+Simply push your code to your GitHub repository and import the project into Vercel—the default Vite build settings will be automatically detected!

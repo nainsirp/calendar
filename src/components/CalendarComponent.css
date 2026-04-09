@@ -212,6 +212,24 @@
   border-radius: 50%;
 }
 
+.holiday-dot {
+  position: absolute;
+  bottom: 12%; 
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  background-color: var(--accent-color);
+  border-radius: 50%;
+  z-index: 3;
+  opacity: 0.7;
+}
+
+.date-cell.selected .holiday-dot {
+  background-color: var(--bg-calendar);
+  opacity: 1;
+}
+
 .date-cell.prev-month, .date-cell.next-month {
   color: var(--text-muted);
   font-weight: 400;
@@ -229,12 +247,73 @@
   transform: scale(0.95);
 }
 
-.date-cell.selected {
+.date-cell .date-num {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.date-cell.selected .date-num {
   background: var(--accent-color);
   color: var(--accent-text);
   box-shadow: 0 4px 10px var(--accent-light);
+}
+
+.date-cell.selected {
   z-index: 5;
-  border-radius: 12px;
+}
+
+.date-cell.selected.end-date .date-num,
+.date-cell.selected.hover-end .date-num {
+  box-shadow: inset 0 0 0 2px var(--bg-calendar), 0 4px 10px var(--accent-light);
+}
+
+.date-cell.in-range,
+.date-cell.hover-range {
+  color: var(--text-primary);
+}
+
+.date-cell.in-range::after,
+.date-cell.hover-range::after,
+.date-cell.range-start:not(.single-date)::after,
+.date-cell.range-end:not(.single-date)::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  background-color: var(--accent-color);
+  z-index: 0;
+}
+
+.date-cell.in-range::after {
+  left: -1.5px; right: -1.5px;
+  opacity: 0.15;
+}
+
+.date-cell.hover-range::after {
+  left: -1.5px; right: -1.5px;
+  opacity: 0.08;
+}
+
+.date-cell.range-start:not(.single-date)::after {
+  right: -1.5px; width: 50%;
+  opacity: 0.15;
+}
+.date-cell.range-start.is-hover:not(.single-date)::after {
+  opacity: 0.08;
+}
+
+.date-cell.range-end:not(.single-date)::after {
+  left: -1.5px; width: 50%;
+  opacity: 0.15;
+}
+.date-cell.range-end.is-hover:not(.single-date)::after {
+  opacity: 0.08;
 }
 
 /* --- Notes Panel --- */
@@ -245,26 +324,59 @@
   height: 100%;
 }
 
-.notes-header {
-  height: 32px;
+.notes-tabs {
   display: flex;
-  align-items: center;
+  gap: 15px;
   margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 8px;
 }
 
-.notes-header h3 {
+.notes-tab {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin: 0;
-  transform: translateY(8px);
+  position: relative;
   transition: color 0.3s ease;
 }
 
-.notes-header h3:hover {
+.notes-tab:hover:not(:disabled) {
+  color: var(--text-primary);
+}
+
+.notes-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.notes-tab.active {
   color: var(--accent-color);
+}
+
+.notes-tab.active::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent-color);
+  border-radius: 2px;
+}
+
+.notes-subheader {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .notes-list-container {

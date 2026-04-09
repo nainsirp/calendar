@@ -15,6 +15,14 @@ const CalendarComponent = ({ theme }) => {
     return today;
   });
 
+  const [endDate, setEndDate] = useState(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return today;
+  });
+
+  const [hoverDate, setHoverDate] = useState(null);
+
   const [flipDirection, setFlipDirection] = useState('none');
 
   const handlePrevMonth = () => {
@@ -53,18 +61,23 @@ const CalendarComponent = ({ theme }) => {
             <NotesPanel 
               currentMonth={currentMonth}
               currentYear={currentYear}
+              selectedDate={startDate}
             />
           </div>
           <div className="calendar-body-right">
-            <MonthGrid 
-              currentMonth={currentMonth}
-              currentYear={currentYear}
-              startDate={startDate}
-              setStartDate={setStartDate}
-              onPrevMonth={handlePrevMonth}
-              onNextMonth={handleNextMonth}
-              flipDirection={flipDirection}
-            />
+              <MonthGrid 
+                currentMonth={currentMonth}
+                currentYear={currentYear}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                endDate={endDate}
+                setEndDate={setEndDate}
+                hoverDate={hoverDate}
+                setHoverDate={setHoverDate}
+                onPrevMonth={handlePrevMonth}
+                onNextMonth={handleNextMonth}
+                flipDirection={flipDirection}
+              />
           </div>
         </div>
       </div>

@@ -3,11 +3,45 @@ import './CalendarComponent.css';
 
 const DAYS_OF_WEEK = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
+const HOLIDAYS = {
+  // Global & US Holidays
+  '0-1': "New Year's Day",
+  '1-14': "Valentine's Day",
+  '2-17': "St. Patrick's Day",
+  '3-1': "April Fools' Day",
+  '4-1': "May Day",
+  '6-4': "Independence Day",
+  '9-31': "Halloween",
+  '10-11': "Veterans Day",
+  '11-25': "Christmas",
+  '11-31': "New Year's Eve",
+  
+  // Global Cultural Events
+  '0-29': "Lunar New Year",
+  '1-17': "Rio Carnival",
+  '7-28': "La Tomatina", 
+  '8-21': "Oktoberfest Starts", 
+  '10-1': "Día de los Muertos", 
+  
+  // Major Hindu Festivals (Using exact 2026 Dates)
+  '0-14': "Makar Sankranti",    // Jan 14
+  '1-15': "Maha Shivaratri",    // Feb 15
+  '2-4': "Holi",                // Mar 4
+  '8-4': "Krishna Janmashtami", // Sep 4
+  '8-14': "Ganesh Chaturthi",   // Sep 14
+  '9-20': "Dussehra",           // Oct 20
+  '10-8': "Diwali"              // Nov 8
+};
+
 const MonthGrid = ({
   currentMonth,
   currentYear,
   startDate,
   setStartDate,
+  endDate,
+  setEndDate,
+  hoverDate,
+  setHoverDate,
   onPrevMonth,
   onNextMonth,
   flipDirection
@@ -20,17 +54,29 @@ const MonthGrid = ({
     const clickedDate = new Date(currentYear, currentMonth, day);
     clickedDate.setHours(0,0,0,0);
     
-    // Toggle single selection off if clicked again, otherwise select it
-    if (startDate && startDate.getTime() === clickedDate.getTime()) {
-      setStartDate(null);
+    if (startDate && !endDate) {
+      if (clickedDate.getTime() < startDate.getTime()) {
+        setEndDate(startDate);
+        setStartDate(clickedDate);
+      } else if (clickedDate.getTime() === startDate.getTime()) {
+        setEndDate(clickedDate);
+      } else {
+        setEndDate(clickedDate);
+      }
     } else {
       setStartDate(clickedDate);
+      setEndDate(null);
     }
   };
 
-  const isSelected = (day) => {
-    if (!day || !startDate) return false;
-    return new Date(currentYear, currentMonth, day).getTime() === startDate.getTime();
+  const handleDateHover = (day) => {
+    if (startDate && !endDate && day) {
+      const hover = new Date(currentYear, currentMonth, day);
+      hover.setHours(0,0,0,0);
+      setHoverDate(hover);
+    } else if (!day) {
+      setHoverDate(null);
+    }
   };
 
   const renderDays = () => {
@@ -44,23 +90,71 @@ const MonthGrid = ({
     for (let i = firstDayIndex - 1; i >= 0; i--) {
       days.push(
         <div key={`prev-${i}`} className="date-cell prev-month">
-          {prevMonthDays - i}
+          <span className="date-num">{prevMonthDays - i}</span>
         </div>
       );
     }
 
     // Current month days
     for (let i = 1; i <= totalDays; i++) {
+        const currentDate = new Date(currentYear, currentMonth, i);
+        currentDate.setHours(0,0,0,0);
+        const t = currentDate.getTime();
+        
         let className = "date-cell current-month";
-        if (isSelected(i)) className += " selected";
+
+        const st = startDate ? startDate.getTime() : null;
+        const et = endDate ? endDate.getTime() : null;
+        const ht = hoverDate ? hoverDate.getTime() : null;
+
+        let isStart = st === t;
+        let isEnd = et === t;
+        
+        let visualStart = st === t;
+        let visualEnd = et === t;
+        let isHover = false;
+
+        if (st && et && t > st && t < et) {
+            className += " in-range";
+        }
+
+        // Preview hover
+        if (st && !et && ht) {
+             const minT = Math.min(st, ht);
+             const maxT = Math.max(st, ht);
+             if (t > minT && t < maxT) {
+                 className += " hover-range";
+             } else if (t === ht && t !== st) {
+                 className += " selected hover-end";
+             }
+             
+             if (t === minT) visualStart = true;
+             if (t === maxT) visualEnd = true;
+             if (st !== ht) isHover = true;
+        }
+
+        if (visualStart) className += " range-start";
+        if (visualEnd) className += " range-end";
+        if (isHover) className += " is-hover";
+
+        if (isStart) className += " selected start-date";
+        if (isEnd) className += " selected end-date";
+        if ((isStart && isEnd) || (st && !et && st === t && ht === st) || (st && !et && !ht)) {
+             className += " single-date";
+        }
+
+        const holidayName = HOLIDAYS[`${currentMonth}-${i}`];
 
         days.push(
             <div 
               key={`current-${i}`} 
               className={className}
               onClick={() => handleDateClick(i)}
+              onMouseEnter={() => handleDateHover(i)}
+              title={holidayName || ""}
             >
               <span className="date-num">{i}</span>
+              {holidayName && <div className="holiday-dot" />}
             </div>
         );
     }
@@ -71,7 +165,7 @@ const MonthGrid = ({
     for (let i = 1; i <= totalCells - currentCells; i++) {
        days.push(
         <div key={`next-${i}`} className="date-cell next-month">
-          {i}
+          <span className="date-num">{i}</span>
         </div>
       );
     }
@@ -100,7 +194,7 @@ const MonthGrid = ({
         ))}
       </div>
 
-      <div className="dates-grid">
+      <div className="dates-grid" onMouseLeave={() => handleDateHover(null)}>
         {renderDays()}
       </div>
     </div>
